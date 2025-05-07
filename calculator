@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Executable script for the Calculator application on Unix/Linux/Mac
+# Place this file in a directory in your PATH and make it executable with: chmod +x calculator
+
+# Find the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Check if JAR file exists, otherwise build it
+if [ ! -f "$SCRIPT_DIR/dist/Calculator.jar" ]; then
+    echo "Calculator JAR not found. Building..."
+    
+    # Check if build script exists and run it
+    if [ -f "$SCRIPT_DIR/build.sh" ]; then
+        bash "$SCRIPT_DIR/build.sh"
+    else
+        # If build script doesn't exist, try to compile and build JAR
+        mkdir -p "$SCRIPT_DIR/build/classes" "$SCRIPT_DIR/dist"
+        javac -d "$SCRIPT_DIR/build/classes" "$SCRIPT_DIR/src/main/java/Calculator.java" "$SCRIPT_DIR/src/main/java/Main.java"
+        echo "Main-Class: Main" > "$SCRIPT_DIR/build/MANIFEST.MF"
+        jar cvfm "$SCRIPT_DIR/dist/Calculator.jar" "$SCRIPT_DIR/build/MANIFEST.MF" -C "$SCRIPT_DIR/build/classes" .
+    fi
+    
+    # Check if JAR creation was successful
+    if [ ! -f "$SCRIPT_DIR/dist/Calculator.jar" ]; then
+        echo "Failed to build Calculator JAR. Please check error messages."
+        exit 1
+    fi
+fi
+
+# Run the JAR file
+java -jar "$SCRIPT_DIR/dist/Calculator.jar"
